@@ -8,6 +8,7 @@ Changelog
 * Add a timeout for the reset retry request.
 * Add Esperanto translations.
 * Fixed incorrect confirmation url.
+* [BC break] Use UserManager::getRepository() instead of UserManager::repository
 
 ### 2.0.0-beta2 (2017-01-31)
 

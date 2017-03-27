@@ -28,12 +28,17 @@ class UserManager extends BaseUserManager
     /**
      * @var string
      */
+    private $className;
+
+    /**
+     * @var string
+     */
     protected $class;
 
     /**
      * @var ObjectRepository
      */
-    protected $repository;
+    private $repository;
 
     /**
      * Constructor.
@@ -41,17 +46,23 @@ class UserManager extends BaseUserManager
      * @param PasswordUpdaterInterface $passwordUpdater
      * @param CanonicalFieldsUpdater   $canonicalFieldsUpdater
      * @param ObjectManager            $om
-     * @param string                   $class
+     * @param string                   $className
      */
-    public function __construct(PasswordUpdaterInterface $passwordUpdater, CanonicalFieldsUpdater $canonicalFieldsUpdater, ObjectManager $om, $class)
+    public function __construct(PasswordUpdaterInterface $passwordUpdater, CanonicalFieldsUpdater $canonicalFieldsUpdater, ObjectManager $om, $className)
     {
         parent::__construct($passwordUpdater, $canonicalFieldsUpdater);
 
         $this->objectManager = $om;
-        $this->repository = $om->getRepository($class);
+        $this->className = $className;
+    }
 
-        $metadata = $om->getClassMetadata($class);
-        $this->class = $metadata->getName();
+    protected function getRepository()
+    {
+        if (null === $this->repository) {
+            $this->repository = $this->objectManager->getRepository($this->className);
+        }
+
+        return $this->repository;
     }
 
     /**
@@ -68,6 +79,11 @@ class UserManager extends BaseUserManager
      */
     public function getClass()
     {
+        if (null === $this->class) {
+            $metadata = $this->objectManager->getClassMetadata($this->className);
+            $this->class = $metadata->getName();
+        }
+
         return $this->class;
     }
 
@@ -76,7 +92,7 @@ class UserManager extends BaseUserManager
      */
     public function findUserBy(array $criteria)
     {
-        return $this->repository->findOneBy($criteria);
+        return $this->getRepository()->findOneBy($criteria);
     }
 
     /**
@@ -84,7 +100,7 @@ class UserManager extends BaseUserManager
      */
     public function findUsers()
     {
-        return $this->repository->findAll();
+        return $this->getRepository()->findAll();
     }
 
     /**
