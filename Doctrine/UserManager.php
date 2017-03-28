@@ -21,24 +21,14 @@ use FOS\UserBundle\Util\PasswordUpdaterInterface;
 class UserManager extends BaseUserManager
 {
     /**
+     * @var string
+     */
+    private $class;
+
+    /**
      * @var ObjectManager
      */
     protected $objectManager;
-
-    /**
-     * @var string
-     */
-    private $className;
-
-    /**
-     * @var string
-     */
-    protected $class;
-
-    /**
-     * @var ObjectRepository
-     */
-    private $repository;
 
     /**
      * Constructor.
@@ -46,23 +36,19 @@ class UserManager extends BaseUserManager
      * @param PasswordUpdaterInterface $passwordUpdater
      * @param CanonicalFieldsUpdater   $canonicalFieldsUpdater
      * @param ObjectManager            $om
-     * @param string                   $className
+     * @param string                   $class
      */
-    public function __construct(PasswordUpdaterInterface $passwordUpdater, CanonicalFieldsUpdater $canonicalFieldsUpdater, ObjectManager $om, $className)
+    public function __construct(PasswordUpdaterInterface $passwordUpdater, CanonicalFieldsUpdater $canonicalFieldsUpdater, ObjectManager $om, $class)
     {
         parent::__construct($passwordUpdater, $canonicalFieldsUpdater);
 
         $this->objectManager = $om;
-        $this->className = $className;
+        $this->class = $class;
     }
 
     protected function getRepository()
     {
-        if (null === $this->repository) {
-            $this->repository = $this->objectManager->getRepository($this->className);
-        }
-
-        return $this->repository;
+        return $this->objectManager->getRepository($this->getClass());
     }
 
     /**
@@ -79,8 +65,8 @@ class UserManager extends BaseUserManager
      */
     public function getClass()
     {
-        if (null === $this->class) {
-            $metadata = $this->objectManager->getClassMetadata($this->className);
+        if (false !== strpos($this->class, ':')) {
+            $metadata = $this->objectManager->getClassMetadata($this->class);
             $this->class = $metadata->getName();
         }
 
